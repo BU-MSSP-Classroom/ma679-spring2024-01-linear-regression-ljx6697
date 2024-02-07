@@ -193,6 +193,8 @@ corrplot(M, type="upper", order="hclust",
 
 ```
 
+
+
 ```{r,fig.width=9,fig.height=7,echo=show_code}
 mames<-melt(ames_raw[,c("Lot Area","Year Built","Year Remod/Add","Total Bsmt SF","1st Flr SF","2nd Flr SF","Low Qual Fin SF","Gr Liv Area","Full Bath","Half Bath","Bsmt Full Bath","Bsmt Half Bath","TotRms AbvGrd","Garage Area","Wood Deck SF","Open Porch SF","Pool Area","SalePrice")],id.vars = "SalePrice")
 ggplot(mames)+geom_point()+aes(x=value,y=SalePrice)+facet_wrap(variable~.,scales = "free")
@@ -290,13 +292,41 @@ Here are few rules:
 - You cannot use automatic variable selection.
 - You need to explain why you added each variable.
 
+
+
+```{r}
+variables <- c("Lot Area", "Year Built", "Year Remod/Add", "Total Bsmt SF",
+               "1st Flr SF", "2nd Flr SF", "Low Qual Fin SF", "Gr Liv Area",
+               "Full Bath", "Half Bath", "Bsmt Full Bath", "Bsmt Half Bath",
+               "TotRms AbvGrd", "Garage Area", "Wood Deck SF",
+               "Open Porch SF", "Pool Area")
+
+correlations <- numeric(length(variables))
+
+for (i in 1:length(variables)) {
+  correlations[i] <- cor(ames_raw[[variables[i]]], ames_raw$SalePrice, use = "pairwise.complete.obs")
+}
+
+result <- data.frame(Variable = variables, Correlation_with_SalePrice = correlations)
+print(result)
+
+```
+
+
+
+
+
+
+
 ```{r,eval=FALSE,echo=show_code}
-lmfit_2008<- # ["your model here"] # use ames_raw_2008
+lmfit_2008 <- lm(SalePrice~`Gr Liv Area` + `1st Flr SF`, ames_raw_2008) 
+# ["your model here"] # use ames_raw_2008
+
 ```
 
 When you decide on your model use the following to come up with your test loss.
 ```{r,eval=FALSE,echo=show_code}
-pred_2009<-exp(predict(lmfit_2008,newdata=ames_raw_2009))
+pred_2009<-predict(lmfit_2008,newdata=ames_raw_2009)
 calc_loss(pred_2009,ames_raw_2009$SalePrice)
 ```
 
@@ -307,8 +337,8 @@ Try to answer the following additional questions.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+AIC(lmfit_2008)
+BIC(lmfit_2008)
 ```
 
 Your answer:
@@ -322,11 +352,6 @@ Please write your answer in full sentences.
 - Should you include all the predictors? Why?
 
 
-Your code:
-```{r,echo=TRUE}
-#
-#
-```
 
 Your answer:
 
@@ -341,8 +366,13 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+lmfit_2008_it <- lm(SalePrice~`Gr Liv Area` * `1st Flr SF`  , ames_raw_2008) 
+
+pred_2009_it<-predict(lmfit_2008_it,newdata=ames_raw_2009)
+calc_loss(pred_2009,ames_raw_2009$SalePrice)
+
+AIC(lmfit_2008_it)
+BIC(lmfit_2008_it)
 ```
 
 Your answer:
@@ -350,6 +380,7 @@ Your answer:
 ~~~
 Please write your answer in full sentences.
 
+No interaction effect
 
 ~~~
 
